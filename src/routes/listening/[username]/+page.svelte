@@ -79,9 +79,6 @@
 </script>
 <div id="box">
   <div id="content">
-    <div id="user">
-      <h1></h1>
-    </div>
     {#if $playing}
       <div id="now-playing">
         <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Now Playing</span>
@@ -136,10 +133,9 @@
     justify-content: center;
   }
   #content {
-    width: 125vh;
-    max-width: calc(100vw - 40px);
-    max-width: 100%;
-    padding: 20px;
+    width: 100vh;
+    max-width: calc(100% - 40px);
+    padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -153,8 +149,13 @@
     gap: 20px;
     background: var(--bg-secondary);
     padding: 20px;
-    width: 100%;
+    width: 125vh;
     border-radius: 20px;
+  }
+  @media only screen and (max-width: 150vh) {
+    #now-playing {
+      width: calc(100% - 20px);
+    }
   }
   #now-playing-text {
     font-size: x-large;
@@ -179,14 +180,18 @@
     border: none;
   }
   #listens {
-    width: 100vh;
-    max-width: 75%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     gap: 10px;
     background: var(--bg-secondary);
     padding: 20px;
     border-radius: 20px;
+  }
+  @media only screen and (max-width: 100vh) {
+    #listens {
+      width: calc(100% - 20px);
+    }
   }
   .listen {
     background: var(--bg-secondary);
