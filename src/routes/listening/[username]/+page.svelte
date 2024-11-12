@@ -9,6 +9,7 @@
   let album = writable('')
   let cover = writable('')
   let mbid = writable('')
+  let lastTitle = ""
   let listens = writable([])
   async function fetchNowPlaying() {
     let now_playing_fetch = await fetch(`https://api.listenbrainz.org/1/user/${data.username}/playing-now`)
@@ -19,17 +20,45 @@
       $title = res.payload.listens[0].track_metadata.track_name
       $artist = res.payload.listens[0].track_metadata.artist_name
       $album = res.payload.listens[0].track_metadata.release_name
-      if (res.payload.listens[0].track_metadata.additional_info.release_mbid != $mbid) { 
-        let cover_fetch = await fetch(`https://coverartarchive.org/release/${res.payload.listens[0].track_metadata.additional_info.release_mbid}`)
-        let cover_res = {}
-        if (cover_fetch.status == 200) {
-          cover_res = await cover_fetch.json()
-          $cover = cover_res.images[0].thumbnails.large
+      let temp_mbid = res.payload.listens[0].track_metadata.additional_info.release_mbid || null
+      if ($title != lastTitle) { 
+        let search = ""
+        if (res.payload.listens[0].track_metadata.additional_info.release_mbid) {
+          search = res.payload.listens[0].track_metadata.additional_info.release_mbid
+          let cover_fetch = await fetch(`https://coverartarchive.org/release/${search}`)
+          if (cover_fetch.status >= 200 && cover_fetch.status < 400) {
+            let cover_res = await cover_fetch.json()
+            $cover = cover_res.images[0].thumbnails.large
+          } else {
+            $cover = '/no-cover.svg'
+          }
         } else {
-          $cover = '/no-cover.svg'
+          let fetch_release = await fetch(`https://musicbrainz.org/ws/2/release-group/?query=artist:${$artist}%20AND%20release:${$album}&fmt=json`)
+          let res = await fetch_release.json()
+          let release = {}
+          if (res.count > 0) {
+            release = res["release-groups"][0]
+            // search = release.releases[0].id
+            for (let i = 0;i < release.releases.length;i++) {
+              let j = release.releases[i]
+              let cover_fetch = await fetch(`https://coverartarchive.org/release/${j.id}`)
+              if (cover_fetch.status >= 200 && cover_fetch.status < 400) {
+                let cover_res = await cover_fetch.json()
+                $cover = cover_res.images[0].thumbnails.large
+                temp_mbid = j.id
+                break
+              } else {
+                $cover = '/no-cover.svg'
+              }
+            }
+          } else {
+            $cover = '/no-cover.svg'
+            temp_mbid = ''
+          }
         }
+        lastTitle = $title
       }
-      $mbid = res.payload.listens[0].track_metadata.additional_info.release_mbid
+      $mbid = temp_mbid
     } else {
       $playing = false
     }
@@ -50,10 +79,13 @@
 </script>
 <div id="box">
   <div id="content">
+    <div id="user">
+      <h1></h1>
+    </div>
     {#if $playing}
       <div id="now-playing">
-        <span id="now-playing-text">Now Playing</span>
-        <img src={$cover} alt="cover" id="cover">
+        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Now Playing</span>
+        <img src={$cover} alt="" id="cover">
         <div>
           <span id="title">
             {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
@@ -66,15 +98,19 @@
           <span id="album">
             {$album}
           </span>
+          <br>
+          {#if $mbid != null || $mbid.length > 0 }
+           <span id="mbid">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank">{$mbid}</a></span>           
+          {/if}
         </div> 
       </div>
     {:else}
       <div id="now-playing">
-        <span id="now-playing-text">Not listening yet</span>
+        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
       </div>
     {/if}
     <div id="listens">
-      <h3>Listen History</h3>
+      <h3>Listening History</h3>
       {#each $listens as listen}
         <div class="listen">
           <span class="listen-title">
@@ -87,7 +123,7 @@
         </div>
       {/each}
       <div class="listen">
-        <a href="https://listenbrainz.org/user/{data.username}" target="_blank">Go to profile on ListenBrainz</a>
+        <a href="https://listenbrainz.org/user/{data.username}" target="_blank">More on ListenBrainz</a>
       </div>
     </div>
   </div>
@@ -100,27 +136,38 @@
     justify-content: center;
   }
   #content {
-    width: 100vh;
+    width: 125vh;
+    max-width: calc(100vw - 40px);
     max-width: 100%;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
   }
   #now-playing {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
+    justify-items: center;
     gap: 20px;
     background: var(--bg-secondary);
     padding: 20px;
+    width: 100%;
     border-radius: 20px;
   }
   #now-playing-text {
+    font-size: x-large;
     grid-column: 1/3;
   }
   #title {
     font-size: xx-large;
   }
-  #artist, #album, .listen-artist {
+  #artist, #album, #mbid, .listen-artist {
     color: var(--secondary);
+  }
+  #mbid {
+    font-size: small;
   }
   #cover {
     width: 30vw;
@@ -129,9 +176,11 @@
     aspect-ratio: 1/1;
     background: var(--accent);
     border-radius: 20px;
+    border: none;
   }
   #listens {
-    margin-top: 10px;
+    width: 100vh;
+    max-width: 75%;
     display: flex;
     flex-direction: column;
     gap: 10px;

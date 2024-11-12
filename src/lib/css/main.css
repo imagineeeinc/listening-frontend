@@ -61,7 +61,7 @@ a:hover {
 button {
   --width: 46px;
   height: var(--width);
-  padding: 10px;
+  padding: 5px;
 	border: none;
   outline: 3px solid var(--primary);
   background: var(--background);
@@ -78,7 +78,7 @@ input:not([type='checkbox']), select, textarea {
   outline: 3px solid var(--primary);
   background: var(--background);
   border-radius: 10px;
-  padding: 10px;
+  padding: 5px;
   margin: 5px;
   font: inherit;
 	color: inherit;
