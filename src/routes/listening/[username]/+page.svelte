@@ -2,6 +2,7 @@
   let { data } = $props()
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
+  import { FastAverageColor } from 'fast-average-color'
   let playing = writable(false)
   let now_playing = writable({})
   let title = writable('')
@@ -69,11 +70,30 @@
     let res = await listens_fetch.json()
     $listens = res.payload.listens
   }
+  function invertColor(hexTripletColor) {
+    var color = hexTripletColor;
+    color = color.substring(1); // remove #
+    color = parseInt(color, 16); // convert to integer
+    color = 0xFFFFFF ^ color; // invert three bytes
+    color = color.toString(16); // convert to hex
+    color = ("000000" + color).slice(-6); // pad with leading zeros
+    color = "#" + color; // prepend #
+    return color;
+  }
   onMount(() => {
     fetchNowPlaying()
     fetchListens()
     setInterval(fetchNowPlaying, 5000)
     setInterval(fetchListens, 60000)
+    const fac = new FastAverageColor()
+    cover.subscribe((url)=>{
+      // document.getElementById("now-playing").style.backgroundImage = `url(${url})`
+      fac.getColorAsync(url).then((colors)=>{
+        document.getElementById("now-playing").style.backgroundColor = colors.hex
+        document.querySelectorAll(".color-change").forEach(e=>e.style.color = invertColor(colors.hex))
+        document.querySelector("hr").style.background = invertColor(colors.hex)
+      })
+    })
   })
   
 </script>
@@ -81,29 +101,33 @@
   <div id="content">
     {#if $playing}
       <div id="now-playing">
-        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Now Playing</span>
-        <img src={$cover} alt="" id="cover">
-        <div>
-          <span id="title">
-            {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
-          </span>
-          <br>
-          <span id="artist">
-            {$artist}
-          </span>
-          <hr>
-          <span id="album">
-            {$album}
-          </span>
-          <br>
-          {#if $mbid != null || $mbid.length > 0 }
-           <span id="mbid">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank">{$mbid}</a></span>           
-          {/if}
-        </div> 
+        <div id="now-playing-box">
+          <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
+          <img src={$cover} alt="" id="cover">
+          <div>
+            <span id="title" class="color-change">
+              {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
+            </span>
+            <br>
+            <span id="artist" class="color-change">
+              {$artist}
+            </span>
+            <hr>
+            <span id="album" class="color-change">
+              {$album}
+            </span>
+            <br>
+            {#if $mbid.length > 0 && $mbid != null }
+             <span id="mbid" class="color-change">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank" class="color-change">{$mbid}</a></span>           
+            {/if}
+          </div> 
+        </div>
       </div>
     {:else}
       <div id="now-playing">
-        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
+        <div id="now-playing-box">
+          <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
+        </div>
       </div>
     {/if}
     <div id="listens">
@@ -142,14 +166,22 @@
     align-items: center;
   }
   #now-playing {
+    background: var(--bg-secondary);
+    background-size: cover;
+    background-position: center;
+    width: 125vh;
+    border-radius: 20px;
+  }
+  #now-playing-box {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
     justify-items: center;
     gap: 20px;
-    background: var(--bg-secondary);
+    /* background: var(--bg-secondary); */
+    backdrop-filter: blur(100px);
     padding: 20px;
-    width: 125vh;
+    width: calc(100% - 40px);
     border-radius: 20px;
   }
   @media only screen and (max-width: 150vh) {
@@ -163,8 +195,12 @@
   }
   #title {
     font-size: xx-large;
+    font-weight: 600;
   }
-  #artist, #album, #mbid, .listen-artist {
+  #artist, #album, #mbid {
+    font-weight: 500;
+  }
+  .listen-artist {
     color: var(--secondary);
   }
   #mbid {
