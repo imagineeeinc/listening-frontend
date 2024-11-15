@@ -88,11 +88,17 @@
     const fac = new FastAverageColor()
     cover.subscribe((url)=>{
       // document.getElementById("now-playing").style.backgroundImage = `url(${url})`
-      fac.getColorAsync(url).then((colors)=>{
-        document.getElementById("now-playing").style.backgroundColor = colors.hex
-        document.querySelectorAll(".color-change").forEach(e=>e.style.color = invertColor(colors.hex))
-        document.querySelector("hr").style.background = invertColor(colors.hex)
-      })
+      if (url != '/no-cover.svg') {
+        fac.getColorAsync(url).then((colors)=>{
+          document.getElementById("now-playing").style.backgroundColor = colors.hex
+          document.querySelectorAll(".color-change").forEach(e=>e.style.color = invertColor(colors.hex))
+          document.querySelector("hr").style.background = invertColor(colors.hex)
+        })
+      } else {
+        document.getElementById("now-playing").style.backgroundColor = 'var(--bg-secondary)'
+        document.querySelectorAll(".color-change").forEach(e=>e.style.color = 'var(--color)')
+        document.querySelector("hr").style.backgroundColor = 'var(--secondary)'
+      }
     })
   })
   
@@ -101,33 +107,29 @@
   <div id="content">
     {#if $playing}
       <div id="now-playing">
-        <div id="now-playing-box">
-          <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
-          <img src={$cover} alt="" id="cover">
-          <div>
-            <span id="title" class="color-change">
-              {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
-            </span>
-            <br>
-            <span id="artist" class="color-change">
-              {$artist}
-            </span>
-            <hr>
-            <span id="album" class="color-change">
-              {$album}
-            </span>
-            <br>
-            {#if $mbid.length > 0 && $mbid != null }
-             <span id="mbid" class="color-change">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank" class="color-change">{$mbid}</a></span>           
-            {/if}
-          </div> 
-        </div>
+        <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
+        <img src={$cover} alt="" id="cover">
+        <div>
+          <span id="title" class="color-change">
+            {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
+          </span>
+          <br>
+          <span id="artist" class="color-change">
+            {$artist}
+          </span>
+          <hr>
+          <span id="album" class="color-change">
+            {$album}
+          </span>
+          <br>
+          {#if $mbid.length > 0 && $mbid != null }
+           <span id="mbid" class="color-change">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank" class="color-change">{$mbid}</a></span>           
+          {/if}
+        </div> 
       </div>
     {:else}
       <div id="now-playing">
-        <div id="now-playing-box">
-          <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
-        </div>
+        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
       </div>
     {/if}
     <div id="listens">
@@ -171,18 +173,13 @@
     background-position: center;
     width: 125vh;
     border-radius: 20px;
-  }
-  #now-playing-box {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
     justify-items: center;
     gap: 20px;
-    /* background: var(--bg-secondary); */
     backdrop-filter: blur(100px);
     padding: 20px;
-    width: calc(100% - 40px);
-    border-radius: 20px;
   }
   @media only screen and (max-width: 150vh) {
     #now-playing {
