@@ -1,7 +1,8 @@
 import { error } from '@sveltejs/kit';
 
-export function load({ params }) {
+export function load({ params, url }) {
 	let username = params.username
-  return { username }
+  let kiosk = url.searchParams.get('kiosk') || false
+  return { username, kiosk }
 	error(404, 'Not found');
 }

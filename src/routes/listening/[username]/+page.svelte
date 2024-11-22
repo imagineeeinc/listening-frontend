@@ -1,9 +1,12 @@
 <script>
   let { data } = $props()
   import { onMount } from 'svelte'
-  import { writable } from 'svelte/store'
+  import { writable, readable } from 'svelte/store'
   import { FastAverageColor } from 'fast-average-color'
-  let playing = writable(false)
+  import { getContrastingHex } from 'color-contrast-picker'
+  let playing = writable(false) 
+  let kiosk = readable(data.kiosk)
+  let fullscreen = writable($kiosk)
   let now_playing = writable({})
   let title = writable('')
   let artist = writable('')
@@ -82,17 +85,20 @@
   }
   onMount(() => {
     fetchNowPlaying()
-    fetchListens()
     setInterval(fetchNowPlaying, 5000)
-    setInterval(fetchListens, 60000)
+    if (!$kiosk) {
+      fetchListens()
+      setInterval(fetchListens, 60000)
+    }
     const fac = new FastAverageColor()
     cover.subscribe((url)=>{
       // document.getElementById("now-playing").style.backgroundImage = `url(${url})`
       if (url != '/no-cover.svg') {
         fac.getColorAsync(url).then((colors)=>{
           document.getElementById("now-playing").style.backgroundColor = colors.hex
-          document.querySelectorAll(".color-change").forEach(e=>e.style.color = invertColor(colors.hex))
-          document.querySelector("hr").style.background = invertColor(colors.hex)
+          let inverted = getContrastingHex(colors.hex, 'AA_text')
+          document.querySelectorAll(".color-change").forEach(e=>e.style.color = inverted)
+          document.querySelector("hr").style.background = inverted
         })
       } else {
         document.getElementById("now-playing").style.backgroundColor = 'var(--bg-secondary)'
@@ -101,14 +107,39 @@
       }
     })
   })
-  
+  let held = false
+ function toggleFullscreen() {
+    held = true
+    setTimeout(() => {
+      if (held) {
+        $fullscreen = !$fullscreen
+        if ($fullscreen) {
+          document.getElementById("content").requestFullscreen({navigationUI: 'hide'})
+        }
+        held = false
+      }
+    }, 500)
+    fullscreen.subscribe(value => {
+      if (!value && document.fullscreen) {
+        document.exitFullscreen()
+      }
+    })
+  } 
 </script>
 <div id="box">
   <div id="content">
     {#if $playing}
-      <div id="now-playing">
+      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''}">
+        <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+          on:mousedown={toggleFullscreen}
+          on:mouseup={() => held = false}
+          on:touchstart={toggleFullscreen}
+          on:touchend={()=> held = false}
+          on:click={() => $fullscreen = !$fullscreen}>
+          {$fullscreen ? 'collapse_content' : 'expand_content'}
+        </button>
         <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
-        <img src={$cover} alt="" id="cover">
+        <img src={$cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
         <div>
           <span id="title" class="color-change">
             {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
@@ -132,17 +163,30 @@
         <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
       </div>
     {/if}
-    <div id="listens">
+    <div id="listens" class="{$fullscreen ? 'fullscreen' : ''}">
       <h3>Listening History</h3>
       {#each $listens as listen}
         <div class="listen">
-          <span class="listen-title">
-            {listen.track_metadata.track_name}
-          </span>
-          •
-          <span class="listen-artist">
-            {listen.track_metadata.artist_name}
-          </span>
+          {#if listen.track_metadata.mbid_mapping && (listen.track_metadata.mbid_mapping.recording_mbid || listen.track_metadata.mbid_mapping.release_mbid)}
+            {@const rec_url = listen.track_metadata.mbid_mapping.recording_mbid ? `https://musicbrainz.org/recording/${listen.track_metadata.mbid_mapping.recording_mbid}` : `https://musicbrainz.org/release/${listen.track_metadata.mbid_mapping.release_mbid}`}
+            <a class="listen-title" href={rec_url} target="_blank">
+              {listen.track_metadata.track_name}
+            </a>
+          {:else}
+            <span class="listen-title" href="https://listenbrainz.org/track/{listen.track_metadata.mbid_mapping}" target="_blank">
+              {listen.track_metadata.track_name}
+            </span>
+          {/if}
+            •
+          {#if listen.track_metadata.mbid_mapping && listen.track_metadata.mbid_mapping.artist_mbids.length > 0}
+            <a class="listen-artist" href="https://musicbrainz.org/artist/{listen.track_metadata.mbid_mapping.artist_mbids[0]}" target="_blank">
+              {listen.track_metadata.artist_name}
+            </a>
+          {:else}
+            <span class="listen-artist">
+              {listen.track_metadata.artist_name}
+            </span>
+          {/if}
         </div>
       {/each}
       <div class="listen">
@@ -160,6 +204,7 @@
   }
   #content {
     width: 100vh;
+    background: var(--bg);
     max-width: calc(100% - 40px);
     padding: 10px;
     display: flex;
@@ -175,33 +220,25 @@
     border-radius: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 80px 1fr;
     align-items: center;
     justify-items: center;
     gap: 20px;
     backdrop-filter: blur(100px);
     padding: 20px;
   }
-  @media only screen and (max-width: 150vh) {
-    #now-playing {
-      width: calc(100% - 20px);
-    }
+  #now-playing.fullscreen {
+    width: calc(100% - 60px);
+    height: calc(100% - 60px);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    overflow-y: auto
   }
   #now-playing-text {
     font-size: x-large;
     grid-column: 1/3;
-  }
-  #title {
-    font-size: xx-large;
-    font-weight: 600;
-  }
-  #artist, #album, #mbid {
-    font-weight: 500;
-  }
-  .listen-artist {
-    color: var(--secondary);
-  }
-  #mbid {
-    font-size: small;
   }
   #cover {
     width: 30vw;
@@ -212,6 +249,54 @@
     border-radius: 20px;
     border: none;
   }
+  #cover.fullscreen {
+    max-width: 100%;
+    max-height: 100%;
+    width: calc(100vh - 240px);
+  }
+  @media only screen and (max-width: 150vh) {
+    #now-playing {
+      width: calc(100% - 20px);
+    } 
+  }
+  @media only screen and (max-width: 100vh) {
+    #now-playing {
+      grid-template-columns: 1fr;
+      grid-template-rows: 80px 1fr 1fr;
+    }
+    #now-playing-text {
+      grid-column: 1;
+    }
+    #cover {
+      max-width: 50vw;
+      max-height: 50vw;
+      width: 100%;
+    }
+  }
+  #title {
+    font-size: xx-large;
+    font-weight: 600;
+  }
+  #artist, #album, #mbid {
+    font-weight: 500;
+  }
+  #expand {
+    position: absolute;
+    float: right;
+    top: 0;
+    right: 0;
+    background: none;
+    outline: none;
+    width: var(--width);
+    z-index: 10;
+    border-radius: 10px 20px 10px 10px;
+  }
+  .listen-artist {
+    color: var(--secondary);
+  }
+  #mbid {
+    font-size: small;
+  }
   #listens {
     width: 80%;
     display: flex;
@@ -220,6 +305,9 @@
     background: var(--bg-secondary);
     padding: 20px;
     border-radius: 20px;
+  }
+  #listens.fullscreen {
+    display: none;
   }
   @media only screen and (max-width: 100vh) {
     #listens {
@@ -238,5 +326,8 @@
     border: none;
     border-radius: 20px;
     width: 50%;
+  }
+  .hide {
+    display: none;
   }
 </style>

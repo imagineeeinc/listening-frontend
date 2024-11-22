@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      color-contrast-picker:
+        specifier: ^1.0.8
+        version: 1.0.8
       fast-average-color:
         specifier: ^9.4.0
         version: 9.4.0
@@ -335,6 +338,9 @@ packages:
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
+
+  color-contrast-picker@1.0.8:
+    resolution: {integrity: sha512-z2dzwG79rgQN9xLvyf9OAElGRTQnRK9WWy7iTGenCC3WHj7DYmZkztSAc44gNif5LMfqoE6FdS4o83a1H1i0OQ==}
 
   cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
@@ -701,6 +707,8 @@ snapshots:
   aria-query@5.3.2: {}
 
   axobject-query@4.1.0: {}
+
+  color-contrast-picker@1.0.8: {}
 
   cookie@0.6.0: {}
 
