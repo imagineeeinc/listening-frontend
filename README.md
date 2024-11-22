@@ -2,7 +2,7 @@
 a listenbrainz frontend using the listenbrainz public api to watch users live music playback and recent history.
 
 ## Features
-- View currently playing song with dynamic colour (now playing widget).
+- View live currently playing song with dynamic colour (now playing widget).
 - View last 40 listens, links to artist and recording/ release on musicbrainz for viewing.
 - Enlarge now playing widget.
 - Full screen now playing widget by holding the expand button for 0.5 seconds.

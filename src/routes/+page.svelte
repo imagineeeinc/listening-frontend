@@ -10,10 +10,16 @@
     <h1>ListenBrainz live listening viewer</h1>
     <p>
       View a user listening to music live. Using the <a href="https://listenbrainz.org/" target="_blank">ListenBrainz</a> scrobbling service's public api to view what a user has listened in the past and live.
-    <p>
-    <div>
+    </p>
+    <ul>
+      <li>Live Now Playing Widget with adaptive colors</li>
+      <li>Listening history</li>
+      <li>Expanded widget (hold expand for full screen)</li>
+      <li>Kisok mode, add <code>?kiosk=true</code> to the url to enable</li>
+    </ul>
+    <div id="input">
       <input bind:value={username} placeholder="ListenBrainz username" type="text"/>
-      <button on:click={goTo} id="go">Go</button>
+      <button on:click={goTo} id="go" class="m-icon">rocket_launch</button>
     </div>
   </div>
 </div>
@@ -37,8 +43,19 @@
   h1 {
     font-size: xx-large;
   }
+  #input {
+    display: flex;
+    align-items: center;
+    gap: 10px
+  }
   #go {
     height: 56px;
     width: 56px;
+  }
+  code {
+    font-family: monospace;
+    background: var(--bg-secondary);
+    padding: 2px;
+    border-radius: 5px;
   }
 </style>

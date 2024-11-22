@@ -24,6 +24,10 @@ body {
 	padding: 0;
 	margin: 0;
 }
+::selection {
+  background: var(--secondary);
+  color: var(--bg-secondary);
+}
 /* Material icons from fonts.google.com/icons */
 .m-icon {
   font-family: 'Material Symbols Outlined';
