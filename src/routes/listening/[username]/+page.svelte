@@ -11,7 +11,7 @@
   let title = writable('')
   let artist = writable('')
   let album = writable('')
-  let cover = writable('')
+  let cover = writable('/no-cover.svg')
   let mbid = writable('')
   let lastTitle = ""
   let listens = writable([])
