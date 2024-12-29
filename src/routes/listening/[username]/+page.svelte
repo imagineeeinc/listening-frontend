@@ -108,7 +108,7 @@
     })
   })
   let held = false
- function toggleFullscreen() {
+  function toggleFullscreen() {
     held = true
     setTimeout(() => {
       if (held) {
@@ -154,12 +154,20 @@
           </span>
           <br>
           {#if $mbid.length > 0 && $mbid != null }
-           <span id="mbid" class="color-change">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank" class="color-change">{$mbid}</a></span>           
+            <span id="mbid" class="color-change">MusicBrainz ID: <a href="https://musicbrainz.org/release/{$mbid}" target="_blank" class="color-change">{$mbid}</a></span>           
           {/if}
         </div> 
       </div>
     {:else}
-      <div id="now-playing">
+      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''} not-playing">
+        <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+          on:mousedown={toggleFullscreen}
+          on:mouseup={() => held = false}
+          on:touchstart={toggleFullscreen}
+          on:touchend={()=> held = false}
+          on:click={() => $fullscreen = !$fullscreen}>
+          {$fullscreen ? 'collapse_content' : 'expand_content'}
+        </button>
         <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
       </div>
     {/if}
@@ -227,6 +235,15 @@
     backdrop-filter: blur(100px);
     padding: 20px;
   }
+  #now-playing.not-playing {
+    width: 80%;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    height: 20vh;
+  }
+  #now-playing.not-playing > #now-playing-text {
+    font-size: xx-large;
+  }
   #now-playing.fullscreen {
     width: calc(100% - 60px);
     height: calc(100% - 60px);
@@ -250,9 +267,8 @@
     border: none;
   }
   #cover.fullscreen {
-    max-width: 100%;
-    max-height: 100%;
-    width: calc(100vh - 240px);
+    max-height: calc(100% - 60px);
+    width: 100%;
   }
   @media only screen and (max-width: 150vh) {
     #now-playing {
@@ -268,6 +284,11 @@
       grid-column: 1;
     }
     #cover {
+      max-width: 50vw;
+      max-height: 50vw;
+      width: 100%;
+    }
+    #cover.fullscreen {
       max-width: 50vw;
       max-height: 50vw;
       width: 100%;
