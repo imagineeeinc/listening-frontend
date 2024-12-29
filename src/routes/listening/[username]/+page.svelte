@@ -267,7 +267,8 @@
     border: none;
   }
   #cover.fullscreen {
-    max-height: calc(100% - 60px);
+    max-width: calc(100vh - 160px);
+    max-height: calc(100vh - 160px);
     width: 100%;
   }
   @media only screen and (max-width: 150vh) {
@@ -289,8 +290,8 @@
       width: 100%;
     }
     #cover.fullscreen {
-      max-width: 50vw;
-      max-height: 50vw;
+      max-width: 50vh;
+      max-height: 50vh;
       width: 100%;
     }
   }
