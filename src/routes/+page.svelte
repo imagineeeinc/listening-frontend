@@ -15,7 +15,9 @@
       <li>Live Now Playing Widget with adaptive colors</li>
       <li>Listening history</li>
       <li>Expanded widget (hold expand for full screen)</li>
+      <li>Screen Wake lock, thus the screen won't turn off</li>
       <li>Kisok mode, add <code>?kiosk=true</code> to the url to enable</li>
+      <li>Screen Wake Lock in kiosk mode, add <code>?kiosk=true&awake=true</code> to the url to enable</li>
     </ul>
     <div id="input">
       <input bind:value={username} placeholder="ListenBrainz username" type="text"/>

@@ -1,6 +1,7 @@
 <script>
   let { data } = $props()
   import { onMount } from 'svelte'
+  import { browser } from '$app/environment'
   import { writable, readable } from 'svelte/store'
   import { FastAverageColor } from 'fast-average-color'
   import { getContrastingHex } from 'color-contrast-picker'
@@ -15,6 +16,8 @@
   let mbid = writable('')
   let lastTitle = ""
   let listens = writable([])
+  let wakelockSupport = writable(false)
+  let wakeLocked = writable(data.awake)
   async function fetchNowPlaying() {
     let now_playing_fetch = await fetch(`https://api.listenbrainz.org/1/user/${data.username}/playing-now`)
     let res = await now_playing_fetch.json()
@@ -83,7 +86,7 @@
     color = "#" + color; // prepend #
     return color;
   }
-  onMount(() => {
+  onMount(async () => {
     fetchNowPlaying()
     setInterval(fetchNowPlaying, 5000)
     if (!$kiosk) {
@@ -106,6 +109,12 @@
         document.querySelector("hr").style.backgroundColor = 'var(--secondary)'
       }
     })
+    if ("wakeLock" in navigator) {
+      $wakelockSupport = true
+      if ($wakeLocked) {
+        await navigator.wakeLock.request("screen")
+      }
+    }
   })
   let held = false
   function toggleFullscreen() {
@@ -124,20 +133,45 @@
         document.exitFullscreen()
       }
     })
-  } 
+  }
+  let wakeLock
+  async function toggleLock() {
+    try {
+      if ($wakeLocked) {
+        await wakeLock.release()
+        $wakeLocked = false
+      } else {
+        wakeLock = await navigator.wakeLock.request("screen")
+        $wakeLocked = true
+      }
+    } catch (err) {}
+  }
+  if (browser && $wakelockSupport) {
+    document.addEventListener("visibilitychange", async () => {
+      if (wakeLock !== null && document.visibilityState === "visible") {
+        wakeLock = await navigator.wakeLock.request("screen");
+      }
+    })
+  }
 </script>
 <div id="box">
   <div id="content">
     {#if $playing}
       <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''}">
-        <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
-          on:mousedown={toggleFullscreen}
-          on:mouseup={() => held = false}
-          on:touchstart={toggleFullscreen}
-          on:touchend={()=> held = false}
-          on:click={() => $fullscreen = !$fullscreen}>
-          {$fullscreen ? 'collapse_content' : 'expand_content'}
-        </button>
+        <div id="top-right">
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
+            onclick={toggleLock}>
+            {$wakeLocked ? 'bedtime_off' : 'bedtime'}
+          </button>
+          <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+            onmousedown={toggleFullscreen}
+            onmouseup={() => held = false}
+            ontouchstart={toggleFullscreen}
+            ontouchend={()=> held = false}
+            onclick={() => $fullscreen = !$fullscreen}>
+            {$fullscreen ? 'collapse_content' : 'expand_content'}
+          </button>
+        </div>
         <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
         <img src={$cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
         <div>
@@ -160,14 +194,20 @@
       </div>
     {:else}
       <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''} not-playing">
-        <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
-          on:mousedown={toggleFullscreen}
-          on:mouseup={() => held = false}
-          on:touchstart={toggleFullscreen}
-          on:touchend={()=> held = false}
-          on:click={() => $fullscreen = !$fullscreen}>
-          {$fullscreen ? 'collapse_content' : 'expand_content'}
-        </button>
+        <div id="top-right">
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
+            onclick={toggleLock}>
+            {$wakeLocked ? 'bedtime_off' : 'bedtime'}
+          </button>
+          <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+            onmousedown={toggleFullscreen}
+            onmouseup={() => held = false}
+            ontouchstart={toggleFullscreen}
+            ontouchend={()=> held = false}
+            onclick={() => $fullscreen = !$fullscreen}>
+            {$fullscreen ? 'collapse_content' : 'expand_content'}
+          </button>
+        </div>
         <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
       </div>
     {/if}
@@ -302,16 +342,33 @@
   #artist, #album, #mbid {
     font-weight: 500;
   }
-  #expand {
+  #top-right {
     position: absolute;
     float: right;
     top: 0;
     right: 0;
+    display: flex;
+    gap: 0;
+  }
+  #expand {
     background: none;
     outline: none;
     width: var(--width);
+    height: var(--width);
     z-index: 10;
     border-radius: 10px 20px 10px 10px;
+    margin: 5px 5px 5px 0;
+  }
+  #lock {
+    background: none;
+    outline: none;
+    width: var(--width);
+    height: var(--width);
+    z-index: 10;
+    border-radius: 10px;
+  }
+  #expand:hover, #lock:hover {
+    background: rgba(255, 255, 255, 0.1);
   }
   .listen-artist {
     color: var(--secondary);
