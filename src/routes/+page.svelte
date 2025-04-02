@@ -18,6 +18,7 @@
       <li>Screen Wake lock, thus the screen won't turn off</li>
       <li>Kisok mode, add <code>?kiosk=true</code> to the url to enable</li>
       <li>Screen Wake Lock in kiosk mode, add <code>?kiosk=true&awake=true</code> to the url to enable</li>
+      <li>Iframe mode ensures to widget fills the full viewport, add <code>?iframe=true</code> to the url to enable</li>
     </ul>
     <div id="input">
       <input bind:value={username} placeholder="ListenBrainz username" type="text"/>

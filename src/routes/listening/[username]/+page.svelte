@@ -7,7 +7,8 @@
   import { getContrastingHex } from 'color-contrast-picker'
   let playing = writable(false) 
   let kiosk = readable(data.kiosk)
-  let fullscreen = writable($kiosk)
+  let iframe = readable(data.iframe)
+  let fullscreen = writable($kiosk || $iframe)
   let now_playing = writable({})
   let title = writable('')
   let artist = writable('')
@@ -157,13 +158,13 @@
 <div id="box">
   <div id="content">
     {#if $playing}
-      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''}">
+      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''} {$iframe ? 'iframe' : ''}">
         <div id="top-right">
-          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$iframe ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
             onclick={toggleLock}>
             {$wakeLocked ? 'bedtime_off' : 'bedtime'}
           </button>
-          <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$iframe ? 'hide': ''}" id="expand"
             onmousedown={toggleFullscreen}
             onmouseup={() => held = false}
             ontouchstart={toggleFullscreen}
@@ -172,7 +173,7 @@
             {$fullscreen ? 'collapse_content' : 'expand_content'}
           </button>
         </div>
-        <span id="now-playing-text" class="color-change"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
+        <span id="now-playing-text" class="color-change {$iframe ? 'hide': ''}"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
         <img src={$cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
         <div>
           <span id="title" class="color-change">
@@ -193,13 +194,13 @@
         </div> 
       </div>
     {:else}
-      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''} not-playing">
+      <div id="now-playing" class="{$fullscreen ? 'fullscreen' : ''} {$iframe ? 'iframe' : ''} not-playing">
         <div id="top-right">
-          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$iframe ? 'hide': ''} {$wakelockSupport ? 'hide': ''}" id="lock"
             onclick={toggleLock}>
             {$wakeLocked ? 'bedtime_off' : 'bedtime'}
           </button>
-          <button class="m-icon color-change {$kiosk ? 'hide': ''}" id="expand"
+          <button class="m-icon color-change {$kiosk ? 'hide': ''} {$iframe ? 'hide': ''}" id="expand"
             onmousedown={toggleFullscreen}
             onmouseup={() => held = false}
             ontouchstart={toggleFullscreen}
@@ -275,6 +276,15 @@
     backdrop-filter: blur(100px);
     padding: 20px;
   }
+  #now-playing.iframe {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    border-radius: 0;
+    width: calc(100% - 40px) !important;
+    height: calc(100% - 40px) !important;
+    grid-template-rows: 1fr !important;
+  }
   #now-playing.not-playing {
     width: 80%;
     grid-template-columns: 1fr;
@@ -313,13 +323,16 @@
   }
   @media only screen and (max-width: 150vh) {
     #now-playing {
-      width: calc(100% - 20px);
+      width: calc(100% - 20px) !important;
     } 
   }
   @media only screen and (max-width: 100vh) {
     #now-playing {
       grid-template-columns: 1fr;
       grid-template-rows: 80px 1fr 1fr;
+    }
+    #now-playing.iframe {
+      grid-template-rows: 1fr 1fr !important;
     }
     #now-playing-text {
       grid-column: 1;
