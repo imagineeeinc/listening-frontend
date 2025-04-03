@@ -331,7 +331,7 @@
       grid-template-columns: 1fr;
       grid-template-rows: 80px 1fr 1fr;
     }
-    #now-playing.iframe {
+    #now-playing.iframe:not(.not-playing) {
       grid-template-rows: 1fr 1fr !important;
     }
     #now-playing-text {
