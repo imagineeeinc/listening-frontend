@@ -14,6 +14,7 @@
   let artist = writable('')
   let album = writable('')
   let cover = writable('/no-cover.svg')
+  let largeCover = writable('/no-cover.svg')
   let mbid = writable('')
   let lastTitle = ""
   let listens = writable([])
@@ -37,6 +38,9 @@
           if (cover_fetch.status >= 200 && cover_fetch.status < 400) {
             let cover_res = await cover_fetch.json()
             $cover = cover_res.images[0].thumbnails.large
+            if (cover_res.images[0].thumbnails[1200]) {
+              $largeCover = cover_res.images[0].thumbnails[1200]
+            }
           } else {
             $cover = '/no-cover.svg'
           }
@@ -53,6 +57,9 @@
               if (cover_fetch.status >= 200 && cover_fetch.status < 400) {
                 let cover_res = await cover_fetch.json()
                 $cover = cover_res.images[0].thumbnails.large
+                if (cover_res.images[0].thumbnails[1200]) {
+                  $largeCover = cover_res.images[0].thumbnails[1200]
+                }
                 temp_mbid = j.id
                 break
               } else {
@@ -173,8 +180,12 @@
             {$fullscreen ? 'collapse_content' : 'expand_content'}
           </button>
         </div>
-        <span id="now-playing-text" class="color-change {$iframe ? 'hide': ''}"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">[{data.username}]</a> Now Playing</span>
-        <img src={$cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
+        <span id="now-playing-text" class="color-change {$iframe ? 'hide': ''}">
+          <a href="https://listenbrainz.org/user/{data.username}/" target="_blank" class="color-change">
+            {data.username} Now Playing
+          </a>
+        </span>
+        <img src={$fullscreen ? $largeCover : $cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
         <div>
           <span id="title" class="color-change">
             {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
@@ -209,7 +220,7 @@
             {$fullscreen ? 'collapse_content' : 'expand_content'}
           </button>
         </div>
-        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">[{data.username}]</a> Not listening yet</span>
+        <span id="now-playing-text"><a href="https://listenbrainz.org/user/{data.username}/" target="_blank">{data.username}</a> Not listening yet</span>
       </div>
     {/if}
     <div id="listens" class="{$fullscreen ? 'fullscreen' : ''}">
@@ -269,12 +280,16 @@
     border-radius: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 80px 1fr;
+    grid-template-rows: 1fr;
     align-items: center;
     justify-items: center;
     gap: 20px;
     backdrop-filter: blur(100px);
-    padding: 20px;
+    padding: 56px 20px 20px 20px;
+    position: relative;
+  }
+  #now-playing:not(.not-playing) {
+    min-height: calc(50vh + 20px);
   }
   #now-playing.iframe {
     position: fixed !important;
@@ -296,50 +311,82 @@
   }
   #now-playing.fullscreen {
     width: calc(100% - 60px);
-    height: calc(100% - 60px);
+    height: calc(100% - 96px);
     position: absolute;
     top: 10px;
     left: 10px;
     z-index: 100;
     overflow-y: auto
   }
+  #now-playing:not(.not-playing) #now-playing-text {
+    font-size: x-large;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+  #now-playing:not(.not-playing) #now-playing-text > a {
+    color: var(--text);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 20px;
+    border-radius: 56px;
+  }
+  #now-playing:not(.not-playing) #now-playing-text > a:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
   #now-playing-text {
     font-size: x-large;
-    grid-column: 1/3;
   }
   #cover {
-    width: 30vw;
-    max-width: 50vh;
-    max-height: 50vh;
-    aspect-ratio: 1/1;
+    width: 100%;
+    max-width: 80vh;
+    max-height: 80vh;
+    /* aspect-ratio: 1/1; */
     background: var(--accent);
     border-radius: 20px;
     border: none;
   }
   #cover.fullscreen {
-    max-width: calc(100vh - 160px);
-    max-height: calc(100vh - 160px);
+    /* max-width: calc(100vh - 160px); */
+    /* max-height: calc(100vh - 160px); */
     width: 100%;
   }
   @media only screen and (max-width: 150vh) {
-    #now-playing {
+    #now-playing:not(.fullscreen) {
       width: calc(100% - 20px) !important;
     } 
   }
   @media only screen and (max-width: 100vh) {
-    #now-playing {
+    #now-playing:not(.not-playing) {
       grid-template-columns: 1fr;
-      grid-template-rows: 80px 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      padding: 56px 20px 56px 20px;
+      max-height: calc(100vh - 132px);
     }
+    /* #now-playing.fullscreen:not(.not-playing) {
+      height: calc(100% - 132px);
+    } */
     #now-playing.iframe:not(.not-playing) {
-      grid-template-rows: 1fr 1fr !important;
+      padding: 20px 20px 56px 20px;
+      height: calc(100% - 76px) !important;
+      max-height: none !important;
     }
     #now-playing-text {
       grid-column: 1;
     }
+    #now-playing:not(.not-playing) #now-playing-text {
+      top: auto;
+      bottom: 0;
+    }
     #cover {
-      max-width: 50vw;
-      max-height: 50vw;
+      max-width: 50vh;
+      max-height: 50vh;
       width: 100%;
     }
     #cover.fullscreen {
