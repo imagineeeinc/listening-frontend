@@ -308,6 +308,8 @@
   }
   #now-playing.not-playing > #now-playing-text {
     font-size: xx-large;
+    text-align: center;
+    word-wrap: normal;
   }
   #now-playing.fullscreen {
     width: calc(100% - 60px);
@@ -345,16 +347,14 @@
   }
   #cover {
     width: 100%;
-    max-width: 80vh;
-    max-height: 80vh;
+    max-width: calc(100cqh - 96px);
+    max-height: calc(100cqh - 96px);
     /* aspect-ratio: 1/1; */
     background: var(--accent);
     border-radius: 20px;
     border: none;
   }
   #cover.fullscreen {
-    /* max-width: calc(100vh - 160px); */
-    /* max-height: calc(100vh - 160px); */
     width: 100%;
   }
   @media only screen and (max-width: 150vh) {
@@ -385,13 +385,13 @@
       bottom: 0;
     }
     #cover {
-      max-width: 50vh;
-      max-height: 50vh;
+      max-width: calc(100cqw - 40px);
+      max-height: calc(100cqw - 40px);
       width: 100%;
     }
     #cover.fullscreen {
-      max-width: 50vh;
-      max-height: 50vh;
+      max-width: calc(100cqw - 40px);
+      max-height: calc(100cqw - 40px);
       width: 100%;
     }
   }
