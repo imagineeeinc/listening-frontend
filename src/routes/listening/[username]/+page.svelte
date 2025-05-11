@@ -107,12 +107,14 @@
       if (url != '/no-cover.svg') {
         fac.getColorAsync(url).then((colors)=>{
           document.getElementById("now-playing").style.backgroundColor = colors.hex
+          document.getElementById("cover").style.backgroundColor = colors.hex
           let inverted = getContrastingHex(colors.hex, 'AA_text')
           document.querySelectorAll(".color-change").forEach(e=>e.style.color = inverted)
           document.querySelector("hr").style.background = inverted
         })
       } else {
         document.getElementById("now-playing").style.backgroundColor = 'var(--bg-secondary)'
+        document.getElementById("cover").style.backgroundColor = 'var(--accent)'
         document.querySelectorAll(".color-change").forEach(e=>e.style.color = 'var(--color)')
         document.querySelector("hr").style.backgroundColor = 'var(--secondary)'
       }
@@ -185,7 +187,7 @@
             {data.username} Now Playing
           </a>
         </span>
-        <img src={$fullscreen ? $largeCover : $cover} alt="" id="cover" class="{$fullscreen ? 'fullscreen' : ''}">
+        <img src={$fullscreen ? $largeCover : $cover} alt="" id="cover" class="color-change {$fullscreen ? 'fullscreen' : ''}">
         <div>
           <span id="title" class="color-change">
             {$title.length > 20 ? $title.substring(0, 17) + '...' : $title}
@@ -338,6 +340,7 @@
     background: rgba(255, 255, 255, 0.1);
     padding: 3px 20px;
     border-radius: 56px;
+    backdrop-filter: blur(5px);
   }
   #now-playing:not(.not-playing) #now-playing-text > a:hover {
     background: rgba(255, 255, 255, 0.2);
@@ -351,8 +354,10 @@
     max-height: calc(100cqh - 96px);
     /* aspect-ratio: 1/1; */
     background: var(--accent);
-    border-radius: 20px;
+    /* TODO: Get perfectly centered image with boreder radius with responsive widht and height */
+    /* border-radius: 20px; */
     border: none;
+    object-fit: contain;
   }
   #cover.fullscreen {
     width: 100%;
@@ -379,7 +384,6 @@
     }
     #now-playing-text {
       grid-column: 1;
-      backdrop-filter: blur(5px);
     }
     #now-playing:not(.not-playing) #now-playing-text {
       top: auto;
@@ -387,12 +391,12 @@
     }
     #cover {
       max-width: calc(100cqw - 40px);
-      max-height: calc(100cqw - 40px);
+      max-height: calc(50cqh - 40px);
       width: 100%;
     }
     #cover.fullscreen {
       max-width: calc(100cqw - 40px);
-      max-height: calc(100cqw - 40px);
+      max-height: calc(50cqh - 40px);
       width: 100%;
     }
   }
