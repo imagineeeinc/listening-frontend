@@ -379,6 +379,7 @@
     }
     #now-playing-text {
       grid-column: 1;
+      backdrop-filter: blur(5px);
     }
     #now-playing:not(.not-playing) #now-playing-text {
       top: auto;
@@ -440,7 +441,6 @@
     width: 80%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
     background: var(--bg-secondary);
     padding: 20px;
     border-radius: 20px;
@@ -456,8 +456,10 @@
   .listen {
     background: var(--bg-secondary);
     padding: 10px;
-    border: 3px solid var(--secondary);
-    border-radius: 20px;
+    border-bottom: 2px solid var(--bg-tertiary);
+  }
+  .listen:last-of-type {
+    border: none;
   }
   hr {
     height: 3px;

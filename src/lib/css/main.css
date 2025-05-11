@@ -1,9 +1,10 @@
 :root {  
   --text: rgb(224, 222, 244);
-  --background: rgb(35, 33, 54);
+  --background: rgb(40, 39, 51);
   --bg: var(--background);
-  --bg-secondary: #403d52;
-  --primary: rgb(234, 154, 151);
+  --bg-secondary: rgb(45, 44, 61);
+  --bg-tertiary: rgb(163, 159, 213);
+  --primary: rgb(237, 177, 175);
   --secondary: rgb(196, 167, 231);
   --accent: rgb(156, 207, 216);
 
