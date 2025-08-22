@@ -1,12 +1,12 @@
 :root {  
-  --text: rgb(224, 222, 244);
-  --background: rgb(40, 39, 51);
+  --text: rgb(205, 214, 244);
+  --background: rgb(24, 24, 37);
   --bg: var(--background);
-  --bg-secondary: rgb(45, 44, 61);
-  --bg-tertiary: rgb(123, 121, 152);
-  --primary: rgb(237, 177, 175);
-  --secondary: rgb(196, 167, 231);
-  --accent: rgb(156, 207, 216);
+  --bg-secondary: rgb(30, 30, 46);
+  --bg-tertiary: #45475a;
+  --primary: rgb(235, 160, 172);
+  --secondary: rgb(203, 166, 247);
+  --accent: rgb(148, 226, 213);
 
 }
 
