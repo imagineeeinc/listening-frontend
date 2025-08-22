@@ -40,6 +40,11 @@
             $cover = cover_res.images[0].thumbnails.large
             if (cover_res.images[0].thumbnails[1200]) {
               $largeCover = cover_res.images[0].thumbnails[1200]
+              // Prefetch
+              let image = new Image()
+              image.src = cover_res.images[0].thumbnails[1200]
+            } else {
+              $largeCover = $cover
             }
           } else {
             $cover = '/no-cover.svg'
@@ -59,6 +64,11 @@
                 $cover = cover_res.images[0].thumbnails.large
                 if (cover_res.images[0].thumbnails[1200]) {
                   $largeCover = cover_res.images[0].thumbnails[1200]
+                  // Prefetch
+                  let image = new Image()
+                  image.src = cover_res.images[0].thumbnails[1200]
+                } else {
+                  $largeCover = $cover
                 }
                 temp_mbid = j.id
                 break
