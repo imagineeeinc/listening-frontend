@@ -354,8 +354,7 @@
     max-height: calc(100cqh - 96px);
     /* aspect-ratio: 1/1; */
     background: var(--accent);
-    /* TODO: Get perfectly centered image with boreder radius with responsive widht and height */
-    /* border-radius: 20px; */
+    clip-path: inset(0 round 20px);
     border: none;
     object-fit: contain;
   }
